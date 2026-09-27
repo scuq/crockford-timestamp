@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# Build output of implementations/crockford-clock
+*.app/
+implementations/crockford-clock/CrockfordBar
+implementations/crockford-clock/CrockfordClock
