@@ -82,6 +82,13 @@ Each entry is short and precise.
 Use the Keep a Changelog format, with `## [Unreleased]` at the top.
 The `scuq-scraibe` agent writes the `CHANGELOG.md` entry.
 
+Before you create the release tag, move the entries below `## [Unreleased]` to a new section for the version.
+The heading of the new section has the form `## [X.Y.Z] - YYYY-MM-DD`, with the version without the `v` and the date of the release.
+An empty `## [Unreleased]` section stays at the top, for the next changes.
+Before you create the tag, commit and push this change to `CHANGELOG.md`.
+This step puts the changelog of the version in the tag.
+Do not release without this step.
+
 ## Plans and decisions
 
 A new decision goes to `docs/decisions/`, as a `.md` file.
@@ -101,3 +108,4 @@ The version comes from the git tag and has the form `X.Y.Z` from Semantic Versio
 Do not write a version into a source file.
 The build scripts read the version from the environment variable `VERSION`.
 Do not create a tag or push a tag unless the user tells you to.
+Before you create the tag, update `CHANGELOG.md` for the release, as the Changelog section describes.

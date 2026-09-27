@@ -6,6 +6,8 @@ The same time as a crockford timestamp is `66X82`.
 
 This repository holds the specification of the format and the reference material.
 
+The live page with the flap clock and the converter is at https://scuq.github.io/crockford-timestamp/.
+
 ## Description
 
 Use the code in descriptions, annotations, labels, and comments.

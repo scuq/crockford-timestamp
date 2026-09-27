@@ -7,6 +7,15 @@ Versions in this file follow [Semantic Versioning 2.0.0](https://semver.org/spec
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-09-27
+
+### Added
+
+- Added a link to the live page at the top of `README.md`.
+- Added a rule to `CLAUDE.md` that a release moves the entries below `## [Unreleased]` to a section for the version.
+
+## [0.0.1] - 2026-09-27
+
 ### Added
 
 - Added `implementations/gnome-shell-clock/`, an extension for GNOME Shell 48 that shows the current UTC time as a crockford timestamp in the top bar.
