@@ -57,11 +57,70 @@ It does not need a reference time.
 
 `implementations/` holds one subdirectory for each implementation of the format.
 
-`implementations/crockford-clock/` holds two macOS apps that show the current UTC time as a crockford timestamp.
+`implementations/macos-clock/` holds two macOS apps that show the current UTC time as a crockford timestamp.
 `CrockfordBar.swift` is a menu bar app.
 `CrockfordClockApp.swift` is a split-flap clock.
-To build the menu bar app, run `./build.sh` in that directory.
+To build the two apps, run `./build.sh` in that directory.
 The build uses the Command Line Tools and does not need Xcode.
+
+`implementations/gnome-shell-clock/` holds an extension for GNOME Shell 48 that shows the same time in the top bar.
+To install the extension from the source, run `./install.sh` in that directory.
+To build the archive of the extension, run `./build.sh` in that directory.
+
+`implementations/web-clock/` holds a static web page with the flap clock and a converter between a date and a code.
+The page is at https://scuq.github.io/crockford-timestamp/.
+A link to one code has the form `https://scuq.github.io/crockford-timestamp/?code=66X82`, with `%2B` for a `+` in the code.
+The page needs no build step, but a browser cannot load an ES module from a `file://` URL.
+To preview the page, run this command in the repository root, then open `http://127.0.0.1:8000/`:
+
+```
+python3 -m http.server 8000 --bind 127.0.0.1 --directory implementations/web-clock
+```
+
+`.github/workflows/build.yml` builds the three implementations on GitHub.
+It publishes the web page to GitHub Pages on each push to the branch `main`, and it publishes the releases on a tag.
+
+## Releases
+
+A release has a version of the form `X.Y.Z` from Semantic Versioning 2.0.0.
+The web page is not part of a release.
+It publishes again on each push to the branch `main` and has no version of its own.
+
+To publish a release, push a tag of the form `vX.Y.Z`:
+
+```
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+A tag with a suffix, for example `v1.2.3-rc.1`, publishes a prerelease.
+The apps and the extension of a prerelease have the version without the suffix.
+
+Each release has these files:
+
+| File | Contents |
+|---|---|
+| `CrockfordBar-macos-X.Y.Z.zip` | The menu bar app for macOS 13 and later |
+| `CrockfordClock-macos-X.Y.Z.zip` | The split-flap clock for macOS 13 and later |
+| `crockford-clock-gnome-shell-X.Y.Z.zip` | The extension for GNOME Shell 48 |
+| `SHA256SUMS` | The SHA-256 checksums of the three archives |
+
+The macOS apps are universal binaries for arm64 and x86_64.
+They have an ad-hoc signature and no notarization from Apple.
+Thus macOS blocks an app from a downloaded archive.
+To start the app, remove the quarantine attribute first:
+
+```
+xattr -dr com.apple.quarantine CrockfordBar.app
+```
+
+To install the extension from the archive, run these commands.
+Log out and log in again between the two commands.
+
+```
+gnome-extensions install --force crockford-clock-gnome-shell-1.2.3.zip
+gnome-extensions enable crockford-clock@scuq.github.io
+```
 
 ## Examples
 
@@ -95,3 +154,4 @@ Write it as `%2B` there.
 ## See also
 
 - Crockford Base32: https://www.crockford.com/base32.html
+- Semantic Versioning 2.0.0: https://semver.org/spec/v2.0.0.html
