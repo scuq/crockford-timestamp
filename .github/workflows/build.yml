@@ -1,0 +1,194 @@
+# build.yml - builds the macOS apps, the GNOME Shell extension, and
+# the web page, and deploys the web page to GitHub Pages.
+#
+# A push to main and a pull request build and test the three
+# implementations. A push to main also deploys the web page.
+# A tag of the form vX.Y.Z also publishes a release with the archives
+# of the macOS apps and the GNOME Shell extension.
+# A tag of the form vX.Y.Z-SUFFIX publishes a prerelease.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      # The version of the tag, for example 1.2.3-rc.1.
+      full: ${{ steps.version.outputs.full }}
+      # The version without the suffix, for example 1.2.3.
+      base: ${{ steps.version.outputs.base }}
+    steps:
+      - name: Read the version from the tag
+        id: version
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          # A build without a tag has the version 0.0.0.
+          full="0.0.0"
+          if [[ "$REF" == refs/tags/v* ]]; then
+            full="${REF#refs/tags/v}"
+          fi
+          semver='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+          if [[ ! "$full" =~ $semver ]]; then
+            echo "::error::The tag v$full is not a semantic version. Use the form vX.Y.Z or vX.Y.Z-SUFFIX."
+            exit 1
+          fi
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+          echo "base=${full%%-*}" >> "$GITHUB_OUTPUT"
+
+  macos:
+    needs: version
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: implementations/macos-clock
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the apps
+        env:
+          VERSION: ${{ needs.version.outputs.base }}
+        run: ./build.sh
+      - name: Make the archives
+        env:
+          FULL: ${{ needs.version.outputs.full }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/dist"
+          for app in CrockfordBar CrockfordClock; do
+            codesign --verify --strict "$app.app"
+            lipo -archs "$app.app/Contents/MacOS/$app"
+            # ditto keeps the signature and the file modes of the bundle.
+            ditto -c -k --keepParent "$app.app" \
+              "$RUNNER_TEMP/dist/$app-macos-$FULL.zip"
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macos
+          path: ${{ runner.temp }}/dist/*.zip
+          if-no-files-found: error
+
+  gnome-shell:
+    needs: version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: implementations/gnome-shell-clock
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install gjs
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gjs
+      - name: Test the codec
+        run: gjs -m test.js
+      - name: Build the archive
+        env:
+          VERSION: ${{ needs.version.outputs.base }}
+          FULL: ${{ needs.version.outputs.full }}
+        run: |
+          ./build.sh
+          mkdir -p "$RUNNER_TEMP/dist"
+          # The name of the release file has the version and no "@".
+          mv crockford-clock@scuq.github.io.shell-extension.zip \
+            "$RUNNER_TEMP/dist/crockford-clock-gnome-shell-$FULL.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gnome-shell
+          path: ${{ runner.temp }}/dist/*.zip
+          if-no-files-found: error
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # The web page has its own copy of codec.js. This check fails
+      # the job when the copy drifts from the GNOME Shell original.
+      - name: Compare the codec copies
+        run: |
+          cmp implementations/gnome-shell-clock/codec.js \
+            implementations/web-clock/codec.js
+      - name: Install gjs
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gjs
+      - name: Test the page logic
+        working-directory: implementations/web-clock
+        env:
+          TZ: Europe/Vienna
+        run: gjs -m test.js
+      # test.js is not part of the site and stays out of this copy.
+      - name: Assemble the site
+        working-directory: implementations/web-clock
+        run: |
+          mkdir -p "$RUNNER_TEMP/site"
+          cp index.html style.css codec.js logic.js copy.js clock.js \
+            converter.js "$RUNNER_TEMP/site/"
+      # Only on a push to main. The job release downloads every
+      # artifact into one directory, and the site archive must not
+      # go there on a tag build.
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          path: ${{ runner.temp }}/site
+
+  pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Needs gnome-shell and web, so a deployment happens only after
+    # the codec tests, the cmp check, and the page logic tests pass.
+    needs: [gnome-shell, web]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      # deploy-pages proves the origin of the deployment with an
+      # OpenID Connect token instead of a stored credential.
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      # cancel-in-progress: false, so a deployment in progress
+      # completes before the next one starts.
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/configure-pages@v6
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    # Needs web too, so a release does not happen when the codec
+    # copies of the two implementations are different.
+    needs: [version, macos, gnome-shell, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish the release
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          FULL: ${{ needs.version.outputs.full }}
+        run: |
+          sha256sum -- *.zip > SHA256SUMS
+          flags=()
+          if [[ "$FULL" == *-* ]]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$TAG" --verify-tag --title "$TAG" \
+            --generate-notes "${flags[@]}" -- *.zip SHA256SUMS

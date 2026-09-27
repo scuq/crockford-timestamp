@@ -1,0 +1,7 @@
+{
+  "uuid": "crockford-clock@scuq.github.io",
+  "name": "Crockford Clock",
+  "description": "Shows the current UTC time as a crockford timestamp in the top bar. Click it to open the flap clock.",
+  "shell-version": ["48"],
+  "url": "https://github.com/scuq/crockford-timestamp"
+}

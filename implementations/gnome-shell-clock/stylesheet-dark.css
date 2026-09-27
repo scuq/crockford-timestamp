@@ -1,0 +1,34 @@
+/* Dark: the shell theme gives the background and the text. Only the
+   flaps use their own colors: amber on night-sky navy. */
+
+@import url("layout.css");
+
+.crockford-flap {
+    background-color: #131a54;
+    border-color: #f0a508;
+}
+
+.crockford-hinge {
+    background-color: #060518;
+}
+
+.crockford-glyph {
+    color: #f0a508;
+}
+
+.crockford-track {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.crockford-signal {
+    background-color: -st-accent-color;
+}
+
+.crockford-dim {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.crockford-ruler-on {
+    background-color: #131a54;
+    color: #f0a508;
+}

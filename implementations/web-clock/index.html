@@ -1,0 +1,107 @@
+<!--
+index.html
+The flap clock and the converter, in one page.
+Loads clock.js and converter.js as ES modules. Both use relative
+paths, because GitHub Pages serves this page below
+/crockford-timestamp/.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="The current UTC time as a crockford timestamp, and a converter between a date and a crockford timestamp.">
+<title>Crockford Timestamp</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="clock.js"></script>
+<script type="module" src="converter.js"></script>
+</head>
+<body>
+<main>
+    <header>
+        <h1>Crockford Timestamp</h1>
+        <p class="dim">
+            Year, month, day, hour, and minute in five characters, in UTC.
+            <a href="https://github.com/scuq/crockford-timestamp">Specification and source</a>
+        </p>
+    </header>
+
+    <noscript>
+        <p class="error">This page needs JavaScript.</p>
+    </noscript>
+
+    <!-- clock.js fills #flaps, #ruler, #hint, #utc, #local, #next, and
+         sets the text of #copy-code. -->
+    <section id="clock" class="clock" aria-labelledby="clock-title">
+        <!-- Visually hidden, so a screen reader still names the section. -->
+        <h2 id="clock-title" class="hidden">Clock</h2>
+        <div id="flaps" class="flaps" role="group" aria-label="The current crockford timestamp"></div>
+        <div class="track" aria-hidden="true">
+            <div id="signal" class="signal"></div>
+        </div>
+        <div class="aid">
+            <!-- Hidden from a screen reader: #hint already gives the
+                 same information as a sentence. -->
+            <ol id="ruler" class="ruler" aria-hidden="true"></ol>
+            <p id="hint" class="hint dim"></p>
+        </div>
+        <div class="footer">
+            <div>
+                <p id="utc" class="utc"></p>
+                <p id="local" class="local dim"></p>
+            </div>
+            <p id="next" class="next dim"></p>
+        </div>
+        <div class="actions">
+            <button type="button" id="copy-code" class="button"></button>
+        </div>
+    </section>
+
+    <!-- converter.js fills #encode-result and #decode-result on a
+         change of an input. min and max on #encode-input are hints
+         only, encode in codec.js decides the valid range. -->
+    <section id="converter" class="converter" aria-labelledby="converter-title">
+        <h2 id="converter-title">Converter</h2>
+
+        <form id="encode-form" novalidate>
+            <fieldset>
+                <legend>Date and time to code</legend>
+                <div class="field">
+                    <label for="encode-input">Date and time</label>
+                    <div class="control">
+                        <input type="datetime-local" id="encode-input" name="value" step="60">
+                        <button type="button" id="encode-now" class="button">Now</button>
+                    </div>
+                </div>
+                <div class="choice" role="radiogroup" aria-label="Time zone of the input">
+                    <label><input type="radio" name="zone" value="local" checked> Local time</label>
+                    <label><input type="radio" name="zone" value="utc"> UTC</label>
+                </div>
+                <div id="encode-result" class="result" aria-live="polite" aria-atomic="true"></div>
+            </fieldset>
+        </form>
+
+        <form id="decode-form" novalidate>
+            <fieldset>
+                <legend>Code to date and time</legend>
+                <div class="field">
+                    <label for="decode-input">Code</label>
+                    <div class="control">
+                        <input type="text" id="decode-input" name="code" class="code"
+                            autocomplete="off" autocapitalize="characters"
+                            spellcheck="false" placeholder="66X82" maxlength="32">
+                    </div>
+                </div>
+                <div id="decode-result" class="result" aria-live="polite" aria-atomic="true"></div>
+            </fieldset>
+        </form>
+    </section>
+
+    <!-- copy.js writes the copy messages here. role="status" makes a
+         screen reader read a new message without a change of focus. -->
+    <p id="status" class="status" role="status"></p>
+</main>
+</body>
+</html>

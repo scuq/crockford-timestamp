@@ -1,0 +1,102 @@
+/* Sizes and fonts of the flap clock. The colors are in
+   stylesheet-dark.css and stylesheet-light.css. */
+
+.crockford-panel-label {
+    font-feature-settings: "tnum";
+}
+
+.crockford-clock {
+    min-width: 504px;
+    padding: 22px 22px 14px 22px;
+    spacing: 18px;
+}
+
+.crockford-flaps {
+    spacing: 10px;
+}
+
+.crockford-tile {
+    spacing: 8px;
+}
+
+.crockford-flap {
+    width: 76px;
+    height: 104px;
+    border-radius: 7px;
+}
+
+.crockford-flap-wide {
+    width: 100px;
+}
+
+/* The border is 2px on each side. The flap keeps its size. */
+.crockford-tile:hover .crockford-flap {
+    width: 72px;
+    height: 100px;
+    border-width: 2px;
+    border-style: solid;
+}
+
+.crockford-tile:hover .crockford-flap-wide {
+    width: 96px;
+}
+
+.crockford-glyph {
+    font-family: monospace;
+    font-size: 70px;
+    font-weight: 600;
+}
+
+.crockford-hinge {
+    height: 2px;
+}
+
+.crockford-caption {
+    font-size: 11px;
+}
+
+.crockford-track,
+.crockford-signal {
+    height: 5px;
+    border-radius: 3px;
+}
+
+.crockford-aid {
+    spacing: 6px;
+}
+
+.crockford-ruler-cell {
+    padding: 3px 0;
+    border-radius: 3px;
+    spacing: 1px;
+}
+
+.crockford-ruler-character {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.crockford-ruler-value {
+    font-size: 8px;
+    font-feature-settings: "tnum";
+}
+
+.crockford-hint {
+    font-size: 12px;
+    font-feature-settings: "tnum";
+}
+
+.crockford-utc {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.crockford-local,
+.crockford-next {
+    font-size: 12px;
+}
+
+.crockford-next {
+    font-feature-settings: "tnum";
+}

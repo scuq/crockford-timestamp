@@ -1,7 +1,10 @@
 # macOS
 .DS_Store
 
-# Build output of implementations/crockford-clock
+# Build output of implementations/macos-clock
 *.app/
-implementations/crockford-clock/CrockfordBar
-implementations/crockford-clock/CrockfordClock
+implementations/macos-clock/CrockfordBar
+implementations/macos-clock/CrockfordClock
+
+# Build output of implementations/gnome-shell-clock
+*.shell-extension.zip
